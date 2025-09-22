@@ -4,13 +4,18 @@ import { AIService } from '@/lib/ai-service';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, chatId, model = 'gemini-1.5-flash', userId = '00000000-0000-0000-0000-000000000001' } = await request.json();
+    const { message, chatId, model = 'gemini-1.5-flash', userId = '00000000-0000-0000-0000-000000000001', fileData } = await request.json();
 
     if (!message || !chatId) {
       return NextResponse.json(
         { error: 'Message and chatId are required' },
         { status: 400 }
       );
+    }
+
+    console.log('Chat API: Received message with file data:', !!fileData);
+    if (fileData) {
+      console.log('Chat API: File type:', fileData.type, 'Name:', fileData.name);
     }
 
     // Verify chat exists and belongs to user
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
     const messages = await DatabaseService.getMessagesByChatId(chatId);
 
     // Generate AI response
-    const aiResponseStream = await AIService.generateResponse(messages, model);
+    const aiResponseStream = await AIService.generateResponse(messages, model, fileData);
 
     // Create a new stream that saves the complete response to the database
     let completeResponse = '';

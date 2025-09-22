@@ -8,7 +8,11 @@ console.log('AI Service: API key length:', apiKey.length);
 const genAI = new GoogleGenerativeAI(apiKey);
 
 export class AIService {
-  static async generateResponse(messages: Message[], modelName: string = 'gemini-1.5-flash'): Promise<ReadableStream<string>> {
+  static async generateResponse(
+    messages: Message[], 
+    modelName: string = 'gemini-1.5-flash', 
+    fileData?: { processedData: string; type: string; name: string; size: number }
+  ): Promise<ReadableStream<string>> {
     try {
       console.log('AIService: Starting generation with', messages.length, 'messages using model:', modelName);
       
@@ -28,6 +32,7 @@ export class AIService {
       }
 
       console.log('AIService: Sending message:', lastUserMessage.content);
+      console.log('AIService: Has file data:', !!fileData);
 
       // For first message, start fresh. For subsequent messages, include history
       let chat;
@@ -47,8 +52,36 @@ export class AIService {
         });
       }
 
+      // Prepare message parts
+      const messageParts: any[] = [{ text: lastUserMessage.content }];
+      
+      // Add image data if available
+      if (fileData && fileData.type.startsWith('image/')) {
+        let base64Data = fileData.processedData;
+        
+        // Remove data URL prefix if present
+        if (base64Data.includes(',')) {
+          base64Data = base64Data.split(',')[1];
+        }
+        
+        messageParts.push({
+          inlineData: {
+            data: base64Data,
+            mimeType: fileData.type
+          }
+        });
+        console.log('AIService: Added image data to message, MIME type:', fileData.type);
+        console.log('AIService: Base64 data length:', base64Data?.length || 0);
+        console.log('AIService: Message parts count:', messageParts.length);
+      }
+
       // Generate streaming response
-      const result = await chat.sendMessageStream(lastUserMessage.content);
+      console.log('AIService: Sending message parts:', JSON.stringify(messageParts.map(part => ({
+        ...part,
+        inlineData: part.inlineData ? { ...part.inlineData, data: '[BASE64_DATA]' } : undefined
+      })), null, 2));
+      
+      const result = await chat.sendMessageStream(messageParts);
 
       // Create a readable stream
       return new ReadableStream({
