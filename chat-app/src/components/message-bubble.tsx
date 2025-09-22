@@ -2,7 +2,7 @@
 
 import { Message } from '@/lib/types';
 import { formatDate, cn } from '@/lib/utils';
-import { User, Bot, Copy, Check } from 'lucide-react';
+import { User, Bot, Copy, Check, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 
 interface MessageBubbleProps {
@@ -24,60 +24,71 @@ export function MessageBubble({ message }: MessageBubbleProps) {
   };
 
   return (
-    <div className={cn("flex gap-4 group", isUser ? "justify-end" : "justify-start")}>
+    <div className={cn("flex gap-4 group animate-fade-in", isUser ? "justify-end" : "justify-start")}>
       {!isUser && (
-        <div className="flex-shrink-0">
-          <div className="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center">
-            <Bot className="h-4 w-4 text-white" />
+        <div className="flex-shrink-0 relative">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+            <Bot className="h-5 w-5 text-white" />
           </div>
+          <div className="absolute inset-0 w-10 h-10 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-600 opacity-20 animate-pulse"></div>
         </div>
       )}
       
       <div className={cn("flex-1 max-w-3xl", isUser && "flex justify-end")}>
         <div
           className={cn(
-            "relative px-4 py-3 rounded-2xl",
+            "relative px-6 py-4 shadow-sm",
             isUser
-              ? "bg-blue-600 text-white ml-auto"
-              : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white mr-auto"
+              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-3xl rounded-br-lg ml-auto shadow-blue-200 dark:shadow-blue-900/30"
+              : "bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-3xl rounded-bl-lg mr-auto border border-gray-200 dark:border-gray-700 shadow-gray-200 dark:shadow-gray-900/30"
           )}
         >
+          {/* AI indicator for assistant messages */}
+          {!isUser && (
+            <div className="flex items-center gap-2 mb-2 text-xs font-medium text-blue-600 dark:text-blue-400">
+              <Sparkles className="h-3 w-3" />
+              <span>AI Assistant</span>
+            </div>
+          )}
+
           {/* Message content */}
-          <div className="whitespace-pre-wrap break-words">
+          <div className="whitespace-pre-wrap break-words leading-relaxed">
             {message.content}
           </div>
           
-          {/* Timestamp */}
-          <div
-            className={cn(
-              "text-xs mt-2 opacity-70",
-              isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
-            )}
-          >
-            {formatDate(message.created_at)}
-          </div>
-
-          {/* Copy button - only show for AI messages */}
-          {!isUser && (
-            <button
-              onClick={handleCopy}
-              className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded transition-all"
-              title="Copy message"
-            >
-              {copied ? (
-                <Check className="h-3 w-3 text-green-600 dark:text-green-400" />
-              ) : (
-                <Copy className="h-3 w-3 text-gray-500 dark:text-gray-400" />
+          {/* Timestamp and actions */}
+          <div className="flex items-center justify-between mt-3">
+            <div
+              className={cn(
+                "text-xs opacity-70",
+                isUser ? "text-blue-100" : "text-gray-500 dark:text-gray-400"
               )}
-            </button>
-          )}
+            >
+              {formatDate(message.created_at)}
+            </div>
+
+            {/* Copy button - only show for AI messages */}
+            {!isUser && (
+              <button
+                onClick={handleCopy}
+                className="opacity-0 group-hover:opacity-100 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-xl transition-all duration-200 transform hover:scale-110"
+                title="Copy message"
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-green-600 dark:text-green-400" />
+                ) : (
+                  <Copy className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+                )}
+              </button>
+            )}
+          </div>
         </div>
       </div>
 
       {isUser && (
-        <div className="flex-shrink-0">
-          <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600 flex items-center justify-center">
-            <User className="h-4 w-4 text-gray-600 dark:text-gray-300" />
+        <div className="flex-shrink-0 relative">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-gray-400 to-gray-600 dark:from-gray-600 dark:to-gray-700 flex items-center justify-center shadow-lg">
+            <User className="h-5 w-5 text-white" />
           </div>
         </div>
       )}

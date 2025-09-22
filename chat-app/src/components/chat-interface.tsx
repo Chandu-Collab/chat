@@ -17,6 +17,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
+  const [showStreamingMessage, setShowStreamingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -42,7 +43,6 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
   const loadChatMessages = async () => {
     if (!chatId) return;
 
-    setLoading(true);
     setError(null);
 
     try {
@@ -94,6 +94,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
 
     console.log('Sending message to chat:', currentChatId);
     setIsStreaming(true);
+    setShowStreamingMessage(true);
     setStreamingContent('');
     setError(null);
 
@@ -150,8 +151,12 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
             
             if (data === '[DONE]') {
               setIsStreaming(false);
-              // Reload messages to get the final saved message
-              setTimeout(() => loadChatMessages(), 100);
+              // Keep showing streaming message for a moment to ensure smooth transition
+              setTimeout(() => {
+                setShowStreamingMessage(false);
+                setStreamingContent('');
+                loadChatMessages();
+              }, 500);
               break;
             }
 
@@ -170,6 +175,8 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
       console.error('Error sending message:', error);
       setError('Failed to send message');
       setIsStreaming(false);
+      setShowStreamingMessage(false);
+      setStreamingContent('');
       // Remove the temporary user message on error
       setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     }
@@ -177,78 +184,142 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
 
   if (!chatId && messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         {/* Welcome screen */}
-        <div className="flex-1 flex items-center justify-center">
-          <div className="text-center max-w-md mx-auto px-4">
-            <MessageSquare className="h-16 w-16 mx-auto mb-4 text-gray-400 dark:text-gray-600" />
-            <h1 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
-              Welcome to ChatBot
+        <div className="flex-1 flex items-center justify-center animate-fade-in">
+          <div className="text-center max-w-2xl mx-auto px-6">
+            <div className="relative mb-8">
+              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+                <MessageSquare className="h-10 w-10 text-white" />
+              </div>
+              <div className="absolute inset-0 w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20 animate-pulse"></div>
+            </div>
+            
+            <h1 className="text-4xl font-light text-gray-900 dark:text-white mb-3 tracking-tight">
+              Hello! I'm your AI Assistant
             </h1>
-            <p className="text-gray-600 dark:text-gray-400 mb-6">
-              Start a conversation by typing a message below. Your chat will be saved automatically.
+            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+              I'm here to help you with questions, creative tasks, analysis, and more. 
+              What would you like to explore today?
             </p>
+            
+            {/* Quick starter prompts */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+              <button 
+                onClick={() => sendMessage("Help me write a creative story")}
+                className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
+              >
+                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  ✨ Creative Writing
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Help me write a creative story
+                </div>
+              </button>
+              
+              <button 
+                onClick={() => sendMessage("Explain a complex topic in simple terms")}
+                className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
+              >
+                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  🧠 Learning
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Explain a complex topic simply
+                </div>
+              </button>
+              
+              <button 
+                onClick={() => sendMessage("Help me solve a coding problem")}
+                className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
+              >
+                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  💻 Coding Help
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Help me solve a coding problem
+                </div>
+              </button>
+              
+              <button 
+                onClick={() => sendMessage("Plan my day and set priorities")}
+                className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
+              >
+                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                  📋 Planning
+                </div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Plan my day and set priorities
+                </div>
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Message input */}
-        <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
+        <div className="px-6 pb-6">
+          <div className="max-w-4xl mx-auto">
+            <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col">
+    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-4 py-6">
+        <div className="max-w-4xl mx-auto px-6 py-8">
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
-              <span className="ml-2 text-gray-500">Loading messages...</span>
+            <div className="flex items-center justify-center py-12 animate-fade-in">
+              <div className="text-center">
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full animate-spin mb-4 mx-auto"></div>
+                <span className="text-gray-500 dark:text-gray-400">Loading conversation...</span>
+              </div>
             </div>
           ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-red-500 dark:text-red-400">{error}</p>
+            <div className="text-center py-12 animate-fade-in">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-red-500 text-2xl">⚠️</span>
+              </div>
+              <p className="text-red-600 dark:text-red-400 mb-4 text-lg">{error}</p>
               <button
                 onClick={loadChatMessages}
-                className="mt-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-full font-medium shadow-lg hover:shadow-xl transition-all transform hover:scale-105"
               >
                 Try Again
               </button>
             </div>
           ) : (
-            <>
-              <div className="mb-4 p-2 bg-gray-100 dark:bg-gray-800 rounded">
-                <p className="text-sm">Debug: {messages.length} messages loaded</p>
-                {messages.length > 0 && (
-                  <p className="text-xs">Last message: {messages[messages.length - 1]?.content?.substring(0, 50)}</p>
-                )}
-              </div>
-              <div className="space-y-6">
-                {messages.map((message) => {
-                  console.log('Rendering message:', message);
-                  return (
-                    <MessageBubble key={message.id} message={message} />
-                  );
-                })}
-                
-                {/* Streaming message */}
-                {isStreaming && streamingContent && (
+            <div className="space-y-8 animate-fade-in">
+              {messages.map((message, index) => (
+                <div key={message.id} className="animate-slide-in" style={{animationDelay: `${index * 0.1}s`}}>
+                  <MessageBubble message={message} />
+                </div>
+              ))}
+              
+              {/* Streaming message */}
+              {showStreamingMessage && streamingContent && (
+                <div className="animate-fade-in">
                   <StreamingMessage 
                     content={streamingContent} 
-                    isComplete={false}
+                    isComplete={!isStreaming}
                   />
-                )}
-              </div>
+                </div>
+              )}
               <div ref={messagesEndRef} />
-            </>
+            </div>
           )}
         </div>
       </div>
 
       {/* Message input */}
-      <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
+      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-4">
+        <div className="max-w-4xl mx-auto">
+          <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
+        </div>
+      </div>
     </div>
   );
 }
