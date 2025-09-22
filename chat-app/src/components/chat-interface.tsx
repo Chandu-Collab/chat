@@ -78,8 +78,8 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
     }
   };
 
-  const sendMessage = async (message: string) => {
-    console.log('sendMessage called with:', message, 'currentChatId:', chatId);
+  const sendMessage = async (message: string, attachedFile?: File, fileType?: string, processedData?: string) => {
+    console.log('sendMessage called with:', message, 'currentChatId:', chatId, 'file:', attachedFile?.name, 'type:', fileType);
     
     let currentChatId = chatId;
     
@@ -128,16 +128,28 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
     setMessages(prev => [...prev, userMessage]);
 
     try {
+      const requestBody: any = {
+        message,
+        chatId: currentChatId,
+        model: selectedModel,
+      };
+
+      // Add file data if available
+      if (attachedFile && fileType) {
+        requestBody.fileData = {
+          name: attachedFile.name,
+          type: fileType,
+          size: attachedFile.size,
+          processedData: processedData
+        };
+      }
+
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message,
-          chatId: currentChatId,
-          model: selectedModel,
-        }),
+        body: JSON.stringify(requestBody),
       });
 
       if (!response.ok) {
