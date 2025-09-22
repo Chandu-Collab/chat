@@ -6,6 +6,9 @@ import { MessageBubble } from './message-bubble';
 import { StreamingMessage } from './streaming-message';
 import { MessageInput } from './message-input';
 import { Loader2, MessageSquare, Settings } from 'lucide-react';
+import { Icon, Avatar } from './ui/icon';
+import { Typography, Heading, Caption } from './ui/typography';
+import { designTokens } from '@/lib/design-system';
 
 interface ChatInterfaceProps {
   chatId?: string;
@@ -217,68 +220,64 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
         <div className="flex-1 flex items-center justify-center animate-fade-in">
           <div className="text-center max-w-2xl mx-auto">
             <div className="relative mb-8">
-              <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
-                <MessageSquare className="h-10 w-10 text-white" />
-              </div>
+              <Avatar icon={MessageSquare} size="lg" gradient />
               <div className="absolute inset-0 w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20 animate-pulse"></div>
             </div>
             
-            <h1 className="text-4xl font-light text-gray-900 dark:text-white mb-3 tracking-tight">
+            <Heading level={1} className="mb-3">
               Hello! I'm your AI Assistant
-            </h1>
-            <p className="text-lg text-gray-600 dark:text-gray-300 mb-8 leading-relaxed">
+            </Heading>
+            <Typography size="lg" color="secondary" className="mb-8 leading-relaxed">
               I'm here to help you with questions, creative tasks, analysis, and more. 
               What would you like to explore today?
-            </p>
+            </Typography>
             
             {/* Quick starter prompts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <button 
-                onClick={() => sendMessage("Help me write a creative story")}
-                className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
-              >
-                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
-                  ✨ Creative Writing
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Help me write a creative story
-                </div>
-              </button>
-              
-              <button 
+                <button 
+                  onClick={() => sendMessage("Help me write a creative story")}
+                  className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
+                >
+                  <Typography size="sm" weight="medium" color="primary" className="mb-1">
+                    ✨ Creative Writing
+                  </Typography>
+                  <Caption>
+                    Help me write a creative story
+                  </Caption>
+                </button>              <button 
                 onClick={() => sendMessage("Explain a complex topic in simple terms")}
                 className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
               >
-                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <Typography size="sm" weight="medium" color="primary" className="mb-1">
                   🧠 Learning
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                </Typography>
+                <Caption>
                   Explain a complex topic simply
-                </div>
+                </Caption>
               </button>
               
               <button 
                 onClick={() => sendMessage("Help me solve a coding problem")}
                 className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
               >
-                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <Typography size="sm" weight="medium" color="primary" className="mb-1">
                   💻 Coding Help
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                </Typography>
+                <Caption>
                   Help me solve a coding problem
-                </div>
+                </Caption>
               </button>
               
               <button 
                 onClick={() => sendMessage("Plan my day and set priorities")}
                 className="p-4 text-left bg-white dark:bg-gray-800 rounded-2xl shadow-sm hover:shadow-md border border-gray-200 dark:border-gray-700 transition-all hover:scale-105"
               >
-                <div className="text-sm font-medium text-gray-900 dark:text-white mb-1">
+                <Typography size="sm" weight="medium" color="primary" className="mb-1">
                   📋 Planning
-                </div>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
+                </Typography>
+                <Caption>
                   Plan my day and set priorities
-                </div>
+                </Caption>
               </button>
             </div>
           </div>

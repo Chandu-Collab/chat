@@ -6,6 +6,9 @@ import { ChatInterface } from '@/components/chat-interface';
 import { ModelSelector } from '@/components/model-selector';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { useTheme } from '@/hooks/use-theme';
+import { Avatar } from '@/components/ui/icon';
+import { Typography } from '@/components/ui/typography';
+import { MessageSquare } from 'lucide-react';
 
 export default function Home() {
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(undefined);
@@ -33,13 +36,11 @@ export default function Home() {
     <div className="h-screen flex flex-col bg-white dark:bg-gray-900 overflow-hidden">
       {/* Fixed App Header */}
       <div className="flex items-center justify-between px-4 py-3 bg-white dark:bg-gray-900">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white text-sm font-semibold">AI</span>
-          </div>
-          <h1 className="text-lg font-medium text-gray-900 dark:text-white">
+        <div className="flex items-center gap-3">
+          <Avatar icon={MessageSquare} size="sm" gradient />
+          <Typography size="lg" weight="medium" color="primary">
             AI Assistant
-          </h1>
+          </Typography>
         </div>
         
         {/* Model Selector and Theme Controls */}
