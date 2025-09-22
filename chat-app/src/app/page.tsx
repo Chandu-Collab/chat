@@ -4,11 +4,14 @@ import { useState } from 'react';
 import { Sidebar } from '@/components/sidebar';
 import { ChatInterface } from '@/components/chat-interface';
 import { ModelSelector } from '@/components/model-selector';
+import { ThemeToggle } from '@/components/theme-toggle';
+import { useTheme } from '@/hooks/use-theme';
 
 export default function Home() {
   const [currentChatId, setCurrentChatId] = useState<string | undefined>(undefined);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [selectedModel, setSelectedModel] = useState('gemini-1.5-flash');
+  const { theme, actualTheme } = useTheme();
 
   const handleChatSelect = (chatId: string) => {
     setCurrentChatId(chatId);
@@ -39,11 +42,14 @@ export default function Home() {
           </h1>
         </div>
         
-        {/* Model Selector */}
-        <ModelSelector 
-          selectedModel={selectedModel}
-          onModelChange={setSelectedModel}
-        />
+        {/* Model Selector and Theme Controls */}
+        <div className="flex items-center gap-3">
+          <ThemeToggle variant="default" showLabel={false} />
+          <ModelSelector 
+            selectedModel={selectedModel}
+            onModelChange={setSelectedModel}
+          />
+        </div>
       </div>
 
       {/* Main Layout Container */}

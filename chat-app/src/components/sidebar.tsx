@@ -235,11 +235,11 @@ export function Sidebar({
               <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
               <span className="text-sm text-gray-600 dark:text-gray-400">Settings</span>
             </div>
-            <ThemeToggle />
+            <ThemeToggle variant="dropdown" showLabel={false} />
           </div>
         ) : (
           <div className="flex justify-center">
-            <ThemeToggle />
+            <ThemeToggle variant="compact" />
           </div>
         )}
       </div>

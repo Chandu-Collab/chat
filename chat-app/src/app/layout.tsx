@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/contexts/theme-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="h-full">
       <body className={`${inter.variable} font-sans antialiased h-full bg-white dark:bg-gray-900`}>
-        {children}
+        <ThemeProvider defaultTheme="system" storageKey="chat-app-theme">
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
