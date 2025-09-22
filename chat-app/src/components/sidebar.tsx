@@ -102,9 +102,9 @@ export function Sidebar({
   };
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 shadow-sm">
+    <div className="flex flex-col h-full bg-white dark:bg-gray-900">
       {/* Header */}
-      <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800">
+      <div className="flex items-center justify-between p-6">
         {!isCollapsed && (
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
@@ -129,12 +129,6 @@ export function Sidebar({
             ) : (
               <ChevronLeft className="h-5 w-5 text-gray-500 dark:text-gray-400" />
             )}
-          </button>
-          <button
-            onClick={onMobileClose}
-            className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
-          >
-            <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
       </div>
@@ -233,8 +227,8 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Footer with theme toggle */}
-      <div className="p-4 border-t border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/50">
+      {/* Footer with theme toggle and settings */}
+      <div className="p-4">
         {!isCollapsed ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -255,7 +249,7 @@ export function Sidebar({
   return (
     <div className={cn(
       "h-full responsive-transition",
-      isCollapsed ? "w-20" : "w-80"
+      isCollapsed ? "w-16" : "w-44"
     )}>
       {sidebarContent}
     </div>

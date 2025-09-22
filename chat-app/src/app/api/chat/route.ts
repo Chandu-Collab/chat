@@ -4,7 +4,7 @@ import { AIService } from '@/lib/ai-service';
 
 export async function POST(request: NextRequest) {
   try {
-    const { message, chatId, userId = '00000000-0000-0000-0000-000000000001' } = await request.json();
+    const { message, chatId, model = 'gemini-1.5-flash', userId = '00000000-0000-0000-0000-000000000001' } = await request.json();
 
     if (!message || !chatId) {
       return NextResponse.json(
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     const messages = await DatabaseService.getMessagesByChatId(chatId);
 
     // Generate AI response
-    const aiResponseStream = await AIService.generateResponse(messages);
+    const aiResponseStream = await AIService.generateResponse(messages, model);
 
     // Create a new stream that saves the complete response to the database
     let completeResponse = '';

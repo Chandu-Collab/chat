@@ -5,20 +5,22 @@ import { Message, ChatWithMessages } from '@/lib/types';
 import { MessageBubble } from './message-bubble';
 import { StreamingMessage } from './streaming-message';
 import { MessageInput } from './message-input';
-import { Loader2, MessageSquare } from 'lucide-react';
+import { Loader2, MessageSquare, Settings } from 'lucide-react';
 
 interface ChatInterfaceProps {
   chatId?: string;
   onChatCreated?: (chatId: string) => void;
+  selectedModel?: string;
 }
 
-export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
+export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1.5-flash' }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
   const [isStreaming, setIsStreaming] = useState(false);
   const [showStreamingMessage, setShowStreamingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingHideStreaming, setPendingHideStreaming] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom
@@ -50,7 +52,18 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
       if (response.ok) {
         const chatData: ChatWithMessages = await response.json();
         console.log('Loaded chat data:', chatData);
+        const previousCount = messages.length;
         setMessages(chatData.messages);
+        
+        // If we were waiting to hide streaming message and we got new messages
+        if (pendingHideStreaming && chatData.messages.length > previousCount) {
+          console.log('New messages loaded, hiding streaming message now');
+          setTimeout(() => {
+            setShowStreamingMessage(false);
+            setStreamingContent('');
+            setPendingHideStreaming(false);
+          }, 200);
+        }
       } else {
         throw new Error('Failed to load chat messages');
       }
@@ -97,6 +110,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
     setShowStreamingMessage(true);
     setStreamingContent('');
     setError(null);
+    setPendingHideStreaming(false);
 
     // Add user message immediately
     const userMessage: Message = {
@@ -119,6 +133,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
         body: JSON.stringify({
           message,
           chatId: currentChatId,
+          model: selectedModel,
         }),
       });
 
@@ -150,13 +165,12 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
             const data = line.slice(6);
             
             if (data === '[DONE]') {
+              console.log('Streaming complete, loading chat messages...');
               setIsStreaming(false);
-              // Keep showing streaming message for a moment to ensure smooth transition
-              setTimeout(() => {
-                setShowStreamingMessage(false);
-                setStreamingContent('');
-                loadChatMessages();
-              }, 500);
+              setPendingHideStreaming(true);
+              
+              // Load new messages - the streaming message will be hidden once new messages are confirmed
+              await loadChatMessages();
               break;
             }
 
@@ -173,10 +187,24 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      setError('Failed to send message');
+      
+      // Set specific error messages based on error type
+      if (error instanceof Error) {
+        if (error.message.includes('quota')) {
+          setError('API quota exceeded. Please wait a few minutes or try switching to Gemini Flash model.');
+        } else if (error.message.includes('not found')) {
+          setError('Selected model is not available. Please choose a different model.');
+        } else {
+          setError(`Failed to send message: ${error.message}`);
+        }
+      } else {
+        setError('Failed to send message');
+      }
+      
       setIsStreaming(false);
       setShowStreamingMessage(false);
       setStreamingContent('');
+      setPendingHideStreaming(false);
       // Remove the temporary user message on error
       setMessages(prev => prev.filter(msg => msg.id !== userMessage.id));
     }
@@ -184,10 +212,10 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
 
   if (!chatId && messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
+      <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 px-4 md:px-6">
         {/* Welcome screen */}
         <div className="flex-1 flex items-center justify-center animate-fade-in">
-          <div className="text-center max-w-2xl mx-auto px-6">
+          <div className="text-center max-w-2xl mx-auto">
             <div className="relative mb-8">
               <div className="w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
                 <MessageSquare className="h-10 w-10 text-white" />
@@ -257,7 +285,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
         </div>
 
         {/* Message input */}
-        <div className="px-6 pb-6">
+        <div className="pb-6">
           <div className="max-w-4xl mx-auto">
             <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
           </div>
@@ -267,10 +295,10 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900">
+    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 px-4 md:px-6">
       {/* Messages area */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="max-w-4xl mx-auto py-8">
           {loading ? (
             <div className="flex items-center justify-center py-12 animate-fade-in">
               <div className="text-center">
@@ -315,7 +343,7 @@ export function ChatInterface({ chatId, onChatCreated }: ChatInterfaceProps) {
       </div>
 
       {/* Message input */}
-      <div className="border-t border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-6 py-4">
+      <div className="bg-white dark:bg-gray-900 py-4">
         <div className="max-w-4xl mx-auto">
           <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
         </div>
