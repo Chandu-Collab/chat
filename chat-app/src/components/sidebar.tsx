@@ -14,6 +14,9 @@ import {
   Settings
 } from 'lucide-react';
 import { ThemeToggle } from './theme-toggle';
+import { Icon, Avatar, IconButton } from './ui/icon';
+import { Typography, Heading, Label, Caption } from './ui/typography';
+import { designTokens } from '@/lib/design-system';
 
 interface SidebarProps {
   currentChatId?: string;
@@ -107,29 +110,24 @@ export function Sidebar({
       <div className="flex items-center justify-between p-6">
         {!isCollapsed && (
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <MessageSquare className="h-4 w-4 text-white" />
-            </div>
-            <h1 className="text-xl font-light text-gray-900 dark:text-white tracking-tight">
+            <Avatar icon={MessageSquare} size="sm" gradient />
+            <Heading level={3} className="tracking-tight">
               Chats
-            </h1>
+            </Heading>
           </div>
         )}
         <div className="flex items-center gap-2">
-          <button
+          <IconButton
+            icon={isCollapsed ? ChevronRight : ChevronLeft}
+            size="md"
+            color="muted"
             onClick={() => {
               const newCollapsed = !isCollapsed;
               onToggleCollapse?.(newCollapsed);
             }}
-            className="hidden md:flex p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-all duration-200"
+            className="hidden md:flex"
             title={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          >
-            {isCollapsed ? (
-              <ChevronRight className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            ) : (
-              <ChevronLeft className="h-5 w-5 text-gray-500 dark:text-gray-400" />
-            )}
-          </button>
+          />
         </div>
       </div>
 
@@ -138,12 +136,17 @@ export function Sidebar({
         <button
           onClick={handleNewChat}
           className={cn(
-            "w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 font-medium",
+            "w-full flex items-center gap-3 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105",
+            designTokens.typography.weight.medium,
             isCollapsed && "justify-center"
           )}
         >
-          <Plus className="h-5 w-5 flex-shrink-0" />
-          {!isCollapsed && <span>New Chat</span>}
+          <Icon icon={Plus} size="md" color="white" />
+          {!isCollapsed && (
+            <Typography size="sm" weight="medium" color="primary" className="text-white">
+              New Chat
+            </Typography>
+          )}
         </button>
       </div>
 
@@ -159,14 +162,16 @@ export function Sidebar({
             ))}
           </div>
         ) : chats.length === 0 ? (
-          <div className="text-center py-12 text-gray-500 dark:text-gray-400">
+          <div className="text-center py-12">
             {!isCollapsed && (
               <div className="animate-fade-in">
                 <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-2xl flex items-center justify-center">
-                  <MessageSquare className="h-8 w-8 opacity-40" />
+                  <Icon icon={MessageSquare} size="xl" color="disabled" className="opacity-40" />
                 </div>
-                <p className="font-medium mb-1">No conversations yet</p>
-                <p className="text-sm opacity-70">Start a new chat to get going</p>
+                <Typography weight="medium" color="muted" className="mb-1">
+                  No conversations yet
+                </Typography>
+                <Caption>Start a new chat to get going</Caption>
               </div>
             )}
           </div>
@@ -188,31 +193,36 @@ export function Sidebar({
                 }}
                 style={{animationDelay: `${index * 0.05}s`}}
               >
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0",
-                  chat.id === currentChatId
-                    ? "bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg"
-                    : "bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400"
-                )}>
-                  <MessageSquare className="h-4 w-4" />
-                </div>
+                <Avatar 
+                  icon={MessageSquare} 
+                  size="sm" 
+                  gradient={chat.id === currentChatId}
+                  className={cn(
+                    chat.id !== currentChatId && "bg-gray-100 dark:bg-gray-700"
+                  )}
+                />
                 
                 {!isCollapsed && (
                   <>
                     <div className="flex-1 min-w-0">
-                      <div className="truncate font-medium text-sm mb-1">
+                      <Typography 
+                        size="sm" 
+                        weight="medium" 
+                        color="primary"
+                        className="truncate mb-1"
+                      >
                         {chat.title || 'New Chat'}
-                      </div>
-                      <div className="text-xs opacity-60 font-normal">
+                      </Typography>
+                      <Caption className="font-normal">
                         {formatDate(chat.updated_at)}
-                      </div>
+                      </Caption>
                     </div>
                     <button
                       onClick={(e) => handleDeleteChat(chat.id, e)}
                       className="opacity-0 group-hover:opacity-100 p-2 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500 dark:hover:text-red-400 rounded-xl transition-all duration-200 transform hover:scale-110"
                       title="Delete chat"
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Icon icon={Trash2} size="sm" color="error" />
                     </button>
                   </>
                 )}
@@ -227,19 +237,12 @@ export function Sidebar({
         )}
       </div>
 
-      {/* Footer with theme toggle and settings */}
+      {/* Footer with settings */}
       <div className="p-4">
-        {!isCollapsed ? (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Settings className="h-4 w-4 text-gray-500 dark:text-gray-400" />
-              <span className="text-sm text-gray-600 dark:text-gray-400">Settings</span>
-            </div>
-            <ThemeToggle variant="dropdown" showLabel={false} />
-          </div>
-        ) : (
-          <div className="flex justify-center">
-            <ThemeToggle variant="compact" />
+        {!isCollapsed && (
+          <div className="flex items-center gap-2">
+            <Icon icon={Settings} size="sm" color="muted" />
+            <Label>Settings</Label>
           </div>
         )}
       </div>
