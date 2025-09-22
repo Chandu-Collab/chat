@@ -43,7 +43,19 @@ export function MessageInput({ onSendMessage, disabled = false }: MessageInputPr
   return (
     <div className="w-full">
       <form onSubmit={handleSubmit} className="relative">
-        <div className="flex items-end gap-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-3xl shadow-lg hover:shadow-xl transition-all duration-200 p-4">
+        {/* Helper text on top */}
+        <div className="flex justify-end mb-2">
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            <span>Press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">↵</kbd> to send, <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Shift</kbd> + <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">↵</kbd> for new line</span>
+            {message.length > 0 && (
+              <span className="text-blue-500 dark:text-blue-400 font-medium ml-4">
+                {message.length} characters
+              </span>
+            )}
+          </div>
+        </div>
+
+        <div className="flex items-end gap-3 bg-white dark:bg-gray-800 p-4">
           {/* Attachment button */}
           <button
             type="button"
@@ -106,21 +118,6 @@ export function MessageInput({ onSendMessage, disabled = false }: MessageInputPr
               <Send className="h-5 w-5" />
             )}
           </button>
-        </div>
-        
-        {/* Helper text */}
-        <div className="flex justify-between items-center mt-3 px-4 text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-4">
-            <span>Press <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">↵</kbd> to send</span>
-            <span><kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">Shift</kbd> + <kbd className="px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-xs">↵</kbd> for new line</span>
-          </div>
-          <div>
-            {message.length > 0 && (
-              <span className="text-blue-500 dark:text-blue-400 font-medium">
-                {message.length} characters
-              </span>
-            )}
-          </div>
         </div>
       </form>
     </div>
