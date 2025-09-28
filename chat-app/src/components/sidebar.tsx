@@ -61,12 +61,18 @@ export function Sidebar({
 
   const handleNewChat = async () => {
     try {
+      // Get userId from localStorage/sessionStorage (set after login/signup)
+      const userId = localStorage.getItem('userId') || sessionStorage.getItem('userId');
+      if (!userId) {
+        alert('You must be logged in to start a chat.');
+        return;
+      }
       const response = await fetch('/api/chat/new', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({}),
+        body: JSON.stringify({ userId }),
       });
 
       if (response.ok) {
