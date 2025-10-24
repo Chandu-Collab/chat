@@ -36,10 +36,11 @@ export default function SignupForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Signup failed');
-      setSuccess('Signup successful! Redirecting to login...');
+      setSuccess('Signup successful! Please login with your credentials...');
       setTimeout(() => {
-        router.push('/auth?mode=login');
-      }, 1200);
+        // Switch to login mode instead of redirecting
+        window.location.href = '/auth';
+      }, 2000);
       setName(''); setEmail(''); setPassword('');
     } catch (err: any) {
       setError(err.message);
@@ -128,6 +129,11 @@ export default function SignupForm() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Google signup failed');
+            
+            // Store authentication data
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userId', data.user.id);
+            
             setSuccess('Google signup successful! Redirecting...');
             setTimeout(() => {
               router.push('/');

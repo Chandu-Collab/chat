@@ -11,27 +11,39 @@ interface ModelSelectorProps {
 
 const GEMINI_MODELS = [
   {
-    id: 'gemini-1.5-flash',
-    name: 'Gemini 1.5 Flash',
-    description: 'Faster responses, higher quota limits',
-    icon: '⚡',
-  },
-  {
-    id: 'gemini-1.5-flash-8b',
-    name: 'Gemini 1.5 Flash 8B',
-    description: 'Lightweight and fast, good for free tier',
+    id: 'gemini-2.0-flash-lite-001',
+    name: 'Gemini 2.0 Flash Lite',
+    description: 'Lightweight and fast, less likely to be overloaded ✅',
     icon: '🌟',
   },
   {
-    id: 'gemini-pro',
-    name: 'Gemini Pro',
-    description: 'Reliable for general use',
+    id: 'gemini-2.0-flash-exp',
+    name: 'Gemini 2.0 Flash Experimental',
+    description: 'Experimental version, may be overloaded',
+    icon: '🧪',
+  },
+  {
+    id: 'gemini-2.0-flash',
+    name: 'Gemini 2.0 Flash',
+    description: 'Latest fast model, may be overloaded during peak times',
+    icon: '⚡',
+  },
+  {
+    id: 'gemini-2.0-flash-001',
+    name: 'Gemini 2.0 Flash 001',
+    description: 'Stable numbered version of 2.0 Flash',
+    icon: '🔢',
+  },
+  {
+    id: 'gemini-2.5-flash',
+    name: 'Gemini 2.5 Flash',
+    description: 'Stable version with 1M token support',
     icon: '💎',
   },
   {
-    id: 'gemini-1.5-pro',
-    name: 'Gemini 1.5 Pro',
-    description: 'Most capable, limited free quota',
+    id: 'gemini-2.5-pro',
+    name: 'Gemini 2.5 Pro',
+    description: 'Most capable, higher quality responses',
     icon: '🚀',
   },
 ];

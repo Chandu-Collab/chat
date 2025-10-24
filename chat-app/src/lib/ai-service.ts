@@ -10,7 +10,7 @@ const genAI = new GoogleGenerativeAI(apiKey);
 export class AIService {
   static async generateResponse(
     messages: Message[], 
-    modelName: string = 'gemini-1.5-flash', 
+    modelName: string = 'gemini-2.0-flash', 
     fileData?: { processedData: string; type: string; name: string; size: number }
   ): Promise<ReadableStream<string>> {
     try {
