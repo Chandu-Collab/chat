@@ -5,7 +5,7 @@ import { Message, ChatWithMessages } from '@/lib/types';
 import { MessageBubble } from './message-bubble';
 import { StreamingMessage } from './streaming-message';
 import { MessageInput } from './message-input';
-import { Loader2, MessageSquare, Settings } from 'lucide-react';
+import { Loader2, MessageSquare, Settings, ChevronUp, ChevronDown } from 'lucide-react';
 import { Icon, Avatar } from './ui/icon';
 import { Typography, Heading, Caption } from './ui/typography';
 import { designTokens } from '@/lib/design-system';
@@ -16,7 +16,7 @@ interface ChatInterfaceProps {
   selectedModel?: string;
 }
 
-export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1.5-flash' }: ChatInterfaceProps) {
+export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-2.0-flash-lite-001' }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
   const [streamingContent, setStreamingContent] = useState('');
@@ -24,16 +24,27 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
   const [showStreamingMessage, setShowStreamingMessage] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pendingHideStreaming, setPendingHideStreaming] = useState(false);
+  const [isUserScrolling, setIsUserScrolling] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom
+  // Simple scroll to bottom function (only when explicitly called)
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, streamingContent]);
+  // Detect if user is manually scrolling to show/hide scroll-to-bottom button
+  const handleScroll = () => {
+    const container = messagesContainerRef.current;
+    if (container) {
+      const { scrollTop, scrollHeight, clientHeight } = container;
+      const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+      setIsUserScrolling(!isNearBottom);
+    }
+  };
+
+  // NO AUTO-SCROLL - Let user control scrolling completely
 
   // Load chat messages when chatId changes
   useEffect(() => {
@@ -48,24 +59,23 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
   const loadChatMessages = async () => {
     if (!chatId) return;
 
+    setIsLoadingMessages(true);
     setError(null);
 
     try {
+      console.log('Loading messages for chat:', chatId);
       const response = await fetch(`/api/chats/${chatId}`);
       if (response.ok) {
         const chatData: ChatWithMessages = await response.json();
-        console.log('Loaded chat data:', chatData);
-        const previousCount = messages.length;
+        console.log('Loaded chat data:', chatData.messages.length, 'messages');
         setMessages(chatData.messages);
         
-        // If we were waiting to hide streaming message and we got new messages
-        if (pendingHideStreaming && chatData.messages.length > previousCount) {
-          console.log('New messages loaded, hiding streaming message now');
-          setTimeout(() => {
-            setShowStreamingMessage(false);
-            setStreamingContent('');
-            setPendingHideStreaming(false);
-          }, 200);
+        // Remove streaming message if we have new messages
+        if (pendingHideStreaming) {
+          console.log('Hiding streaming message after loading new messages');
+          setShowStreamingMessage(false);
+          setStreamingContent('');
+          setPendingHideStreaming(false);
         }
       } else {
         throw new Error('Failed to load chat messages');
@@ -74,7 +84,7 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
       console.error('Error loading chat:', error);
       setError('Failed to load chat messages');
     } finally {
-      setLoading(false);
+      setIsLoadingMessages(false);
     }
   };
 
@@ -191,7 +201,12 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
               setPendingHideStreaming(true);
               
               // Load new messages - the streaming message will be hidden once new messages are confirmed
-              await loadChatMessages();
+              setTimeout(async () => {
+                await loadChatMessages();
+                setShowStreamingMessage(false);
+                setStreamingContent('');
+                setPendingHideStreaming(false);
+              }, 500); // Longer delay to ensure AI response is saved
               break;
             }
 
@@ -211,8 +226,10 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
       
       // Set specific error messages based on error type
       if (error instanceof Error) {
-        if (error.message.includes('quota')) {
-          setError('API quota exceeded. Please wait a few minutes or try switching to Gemini Flash model.');
+        if (error.message.includes('overloaded') || error.message.includes('503')) {
+          setError('The AI model is currently overloaded. Please try switching to a different model (like Gemini 2.0 Flash Experimental) or wait a few minutes and try again.');
+        } else if (error.message.includes('quota')) {
+          setError('API quota exceeded. Please wait a few minutes or try switching to Gemini Flash Lite model.');
         } else if (error.message.includes('not found')) {
           setError('Selected model is not available. Please choose a different model.');
         } else {
@@ -233,10 +250,10 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
 
   if (!chatId && messages.length === 0) {
     return (
-      <div className="flex-1 flex flex-col bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 px-4 md:px-6">
+      <div className="flex-1 flex flex-col h-full bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800">
         {/* Welcome screen */}
-        <div className="flex-1 flex items-center justify-center animate-fade-in">
-          <div className="text-center max-w-2xl mx-auto">
+        <div className="flex-1 flex items-center justify-center px-4 md:px-6 min-h-0">
+          <div className="text-center max-w-2xl mx-auto animate-fade-in">
             <div className="relative mb-8">
               <Avatar icon={MessageSquare} size="lg" gradient />
               <div className="absolute inset-0 w-20 h-20 mx-auto bg-gradient-to-br from-blue-500 to-purple-600 rounded-full opacity-20 animate-pulse"></div>
@@ -301,8 +318,8 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
           </div>
         </div>
 
-        {/* Message input */}
-        <div className="pb-6">
+        {/* Message input fixed at bottom */}
+        <div className="flex-shrink-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4">
           <div className="max-w-4xl mx-auto">
             <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
           </div>
@@ -312,10 +329,14 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
   }
 
   return (
-    <div className="flex-1 flex flex-col bg-white dark:bg-gray-900 px-4 md:px-6">
-      {/* Messages area */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="max-w-4xl mx-auto py-8">
+    <div className="flex flex-col h-screen bg-white dark:bg-gray-900">
+      {/* Messages area - takes full height minus input area */}
+      <div 
+        ref={messagesContainerRef}
+        className="flex-1 overflow-auto px-4 md:px-6"
+        onScroll={handleScroll}
+      >
+        <div className="w-full max-w-4xl mx-auto py-8">
           {loading ? (
             <div className="flex items-center justify-center py-12 animate-fade-in">
               <div className="text-center">
@@ -337,16 +358,16 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
               </button>
             </div>
           ) : (
-            <div className="space-y-8 animate-fade-in">
+            <div className="space-y-6">
               {messages.map((message, index) => (
-                <div key={message.id} className="animate-slide-in" style={{animationDelay: `${index * 0.1}s`}}>
+                <div key={message.id}>
                   <MessageBubble message={message} />
                 </div>
               ))}
               
               {/* Streaming message */}
               {showStreamingMessage && streamingContent && (
-                <div className="animate-fade-in">
+                <div>
                   <StreamingMessage 
                     content={streamingContent} 
                     isComplete={!isStreaming}
@@ -359,8 +380,8 @@ export function ChatInterface({ chatId, onChatCreated, selectedModel = 'gemini-1
         </div>
       </div>
 
-      {/* Message input */}
-      <div className="bg-white dark:bg-gray-900 py-4">
+      {/* Fixed message input at bottom */}
+      <div className="flex-shrink-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 px-4 md:px-6 py-4">
         <div className="max-w-4xl mx-auto">
           <MessageInput onSendMessage={sendMessage} disabled={isStreaming} />
         </div>
