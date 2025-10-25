@@ -32,6 +32,11 @@ export default function LoginForm() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
+      
+      // Store authentication data
+      localStorage.setItem('authToken', data.token);
+      localStorage.setItem('userId', data.user.id);
+      
       setSuccess('Login successful! Redirecting...');
       setTimeout(() => {
         router.push('/');
@@ -119,6 +124,11 @@ export default function LoginForm() {
             });
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Google login failed');
+            
+            // Store authentication data
+            localStorage.setItem('authToken', data.token);
+            localStorage.setItem('userId', data.user.id);
+            
             setSuccess('Google login successful! Redirecting...');
             setTimeout(() => {
               router.push('/');
